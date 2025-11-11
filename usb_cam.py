@@ -10,14 +10,24 @@ def open_camera():
     return cap
 
 
-def print_frame_details(model, frame):
+def print_frame_details(model, frame, label_map):
     # Perform detection on the frame
     results = model.predict(source=frame, imgsz=640, verbose=False)
 
     # Draw results on the frame
-    print("\n\nlen of results " + str(len(results)) + "\n\n")
     for result in results:
         frame_with_boxes = result.plot()
+        # Extract class IDs and convert to names
+        if result.boxes is not None and len(result.boxes) > 0:
+            class_ids = result.boxes.cls.cpu().numpy()  # class IDs
+            for class_id in class_ids:
+                label = model.names[int(class_id)]  # get class name
+                if (label in label_map):
+                    label_map[label] += 1
+                else:
+                    label_map[label] = 1
+                print("Detected " + str(label) + " seen " + str(label_map[label]) + " times")
+
 
     cv2.imshow('YOLO Camera', frame_with_boxes)
 
@@ -26,6 +36,8 @@ def test_camera():
     # Load a pretrained YOLO model
     #model = YOLO("yolov8x.pt")  
     model = YOLO("yolov8s.pt")  
+
+    label_map = {}
 
     # Open the first USB camera (usually index 0)
     cap = open_camera()
@@ -40,10 +52,15 @@ def test_camera():
             break
 
         # Display frame details with YOLO detections
-        print_frame_details(model, frame)
+        print_frame_details(model, frame, label_map)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
     cap.release()
     cv2.destroyAllWindows()
+
+
 
 if __name__ == "__main__":
     test_camera()
