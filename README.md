@@ -1,3 +1,3 @@
 # YOLO-CV
 
-concept
+concept for YOLO-based Computer Vision tasks.
