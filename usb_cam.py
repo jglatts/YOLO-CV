@@ -10,6 +10,17 @@ def open_camera():
     return cap
 
 
+def extract_label(model, result, label_map):
+    class_ids = result.boxes.cls.cpu().numpy()  # class IDs
+    for class_id in class_ids:
+        label = model.names[int(class_id)]  # get class name
+        if (label in label_map):
+            label_map[label] += 1
+        else:
+            label_map[label] = 1
+        print("Detected " + str(label) + " seen " + str(label_map[label]) + " times")
+
+
 def print_frame_details(model, frame, label_map):
     # Perform detection on the frame
     results = model.predict(source=frame, imgsz=640, verbose=False)
@@ -17,17 +28,8 @@ def print_frame_details(model, frame, label_map):
     # Draw results on the frame
     for result in results:
         frame_with_boxes = result.plot()
-        # Extract class IDs and convert to names
         if result.boxes is not None and len(result.boxes) > 0:
-            class_ids = result.boxes.cls.cpu().numpy()  # class IDs
-            for class_id in class_ids:
-                label = model.names[int(class_id)]  # get class name
-                if (label in label_map):
-                    label_map[label] += 1
-                else:
-                    label_map[label] = 1
-                print("Detected " + str(label) + " seen " + str(label_map[label]) + " times")
-
+            extract_label(model, result, label_map)
 
     cv2.imshow('YOLO Camera', frame_with_boxes)
 
