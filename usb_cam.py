@@ -15,6 +15,7 @@ def print_frame_details(model, frame):
     results = model.predict(source=frame, imgsz=640, verbose=False)
 
     # Draw results on the frame
+    print("\n\nlen of results " + str(len(results)) + "\n\n")
     for result in results:
         frame_with_boxes = result.plot()
 
@@ -24,7 +25,7 @@ def print_frame_details(model, frame):
 def test_camera():
     # Load a pretrained YOLO model
     #model = YOLO("yolov8x.pt")  
-    model = YOLO("yolov8.pt")  
+    model = YOLO("yolov8s.pt")  
 
     # Open the first USB camera (usually index 0)
     cap = open_camera()
@@ -40,10 +41,6 @@ def test_camera():
 
         # Display frame details with YOLO detections
         print_frame_details(model, frame)
-
-        # Exit on 'q' key
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
 
     cap.release()
     cv2.destroyAllWindows()
