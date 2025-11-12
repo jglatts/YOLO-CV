@@ -1,16 +1,18 @@
 ﻿'''
         Test Script to train and test a model on MVTecAD dataset
+        NOTE:
+            This script must be run in admin terminal to avoid permission issues
 '''
 from anomalib.data import MVTecAD
 from anomalib.engine import Engine
 from anomalib.models import Patchcore
 
 
-def createEngine():
+def createEngine(category_name):
     # 1. Create dataset
     datamodule = MVTecAD(
         root="./datasets/MVTecAD",
-        category="bottle",
+        category=category_name,
         train_batch_size=32,
         eval_batch_size=32,
     )
@@ -28,4 +30,4 @@ def createEngine():
 
 
 if __name__ == "__main__":
-    createEngine()
+    createEngine("transistor")
