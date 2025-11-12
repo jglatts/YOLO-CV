@@ -60,14 +60,20 @@ def testEngine():
     model = Patchcore()
     engine = Engine()
 
-    # Prepare test images (can be a folder)
-    dataset = PredictDataset(path="./datasets/MVTecAD/bottle/test", 
-                             image_size=(256, 256),
-                             num_workers=8,
-                             )
+    # Path to test dataset
+    #dataset_path = "./datasets/MVTecAD/bottle/test"
+    dataset_path = "./datasets/MVTecAD/transistor/test"
 
-    # Predict anomalies
-    ckpt_path = r'C:\Users\jglatts\Documents\Z-Axis\YOLO-CV\results\Patchcore\MVTecAD\bottle\latest\weights\lightning\model.ckpt'
+    # Prepare test images (can be a folder)
+    dataset = PredictDataset(path=dataset_path, 
+                             image_size=(256, 256),
+                             )
+    
+    # Checkpoints 
+    #ckpt_path = r'C:\Users\jglatts\Documents\Z-Axis\YOLO-CV\results\Patchcore\MVTecAD\bottle\latest\weights\lightning\model.ckpt'
+    ckpt_path = r"C:\Users\jglatts\Documents\Z-Axis\YOLO-CV\results\Patchcore\MVTecAD\transistor\latest\weights\lightning\model.ckpt"
+
+    # Predict Anomalies
     predictions = engine.predict(
         model=model,
         dataset=dataset,
@@ -76,7 +82,7 @@ def testEngine():
 
     # Show results
     if predictions is not None:
-        print(f"\n\nnumber of of bad photos {len(predictions)}\n\n")
+        print(f"\n\nnumber of of bad objects {len(predictions)}\n\n")
         for i, pred in enumerate(predictions):
             analyzeBadImage(pred, i)
             key = cv2.waitKey(0)
