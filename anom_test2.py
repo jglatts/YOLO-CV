@@ -41,7 +41,7 @@ def testEngine():
                 print(f"Warning: failed to load image: {image_path}")
                 continue
 
-            print(f"\nimage {image} is BAD\n")
+            print(f"\nimage {image_path} is BAD\n")
 
             # Get anomaly map tensor
             anomaly_map = pred.anomaly_map  # PyTorch tensor
