@@ -1,50 +1,11 @@
-'''
-
-        Test Script to use a pretraind model on some images
-        Will draw anomalies on the images with red circles
-'''
 import os
+import sys
 import cv2
 import torch
 import numpy as np
 from anomalib.data import PredictDataset
 from anomalib.engine import Engine
 from anomalib.models import Patchcore
-
-def testEngineElastomer():
-    # Load the trained model
-    model = Patchcore()
-    engine = Engine()
-
-    # Path to test dataset
-    dataset_path = "./datasets/Z-Axis/zfill/test"
-
-    # Prepare test images (can be a folder)
-    dataset = PredictDataset(path=dataset_path, 
-                             image_size=(256, 256),
-                             )
-    
-    # Checkpoints 
-    ckpt_path = r"C:\Users\jglatts\Documents\Z-Axis\YOLO-CV\results\Patchcore\zfill_dataset\latest\weights\lightning\model.ckpt"
-
-    # Predict Anomalies
-    predictions = engine.predict(
-        model=model,
-        dataset=dataset,
-        ckpt_path=ckpt_path,
-    )
-
-    # Show results
-    if predictions is not None:
-        print(f"\n\nnumber of of bad objects {len(predictions)}\n\n")
-        for i, pred in enumerate(predictions):
-            analyzeBadImage(pred, i)
-            key = cv2.waitKey(0)
-            cv2.destroyAllWindows()
-            if key == 27:  # ESC to exit early
-                break
-
-    cv2.destroyAllWindows()
 
 
 def analyzeBadImage(pred, i):
@@ -90,24 +51,20 @@ def analyzeBadImage(pred, i):
     cv2.imshow(f"img {i}", overlay)
 
 
-
-def testEngine():
+def testEngineSingleImage(image_path):
     # Load the trained model
     model = Patchcore()
     engine = Engine()
 
-    # Path to test dataset
-    #dataset_path = "./datasets/MVTecAD/bottle/test"
-    dataset_path = "./datasets/MVTecAD/transistor/test"
-
-    # Prepare test images (can be a folder)
-    dataset = PredictDataset(path=dataset_path, 
-                             image_size=(256, 256),
-                             )
+    # Load the dataset (single image)
+    image_path = "./test_images/" + image_path
+    dataset = PredictDataset(
+        path=image_path,      
+        image_size=(512, 512),
+    )
     
     # Checkpoints 
-    #ckpt_path = r'C:\Users\jglatts\Documents\Z-Axis\YOLO-CV\results\Patchcore\MVTecAD\bottle\latest\weights\lightning\model.ckpt'
-    ckpt_path = r"C:\Users\jglatts\Documents\Z-Axis\YOLO-CV\results\Patchcore\MVTecAD\transistor\latest\weights\lightning\model.ckpt"
+    ckpt_path = r"C:\Users\jglatts\Documents\Z-Axis\YOLO-CV\results\Patchcore\zfill_dataset\latest\weights\lightning\model.ckpt"
 
     # Predict Anomalies
     predictions = engine.predict(
@@ -118,17 +75,20 @@ def testEngine():
 
     # Show results
     if predictions is not None:
-        print(f"\n\nnumber of of bad objects {len(predictions)}\n\n")
         for i, pred in enumerate(predictions):
             analyzeBadImage(pred, i)
             key = cv2.waitKey(0)
             cv2.destroyAllWindows()
             if key == 27:  # ESC to exit early
                 break
+    else:
+        print("\n\nGOOD PART!\n\n")
 
     cv2.destroyAllWindows()
 
 
-
 if __name__ == "__main__":
-    testEngineElastomer()
+    if (len(sys.argv) < 2):
+       print("error please supply image file name!")
+    else:
+        testEngineSingleImage(str(sys.argv[1]))
