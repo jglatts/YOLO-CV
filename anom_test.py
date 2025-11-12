@@ -11,9 +11,10 @@ from anomalib.models import Patchcore
 
 def createEngineSimple(dataset, category_name):
     datamodule = Folder(
+        name=category_name + "_dataset",
         root=dataset,
-        normal_dir="train/good",      # where your normal samples are
-        abnormal_dir="test/bad",   # where your defects are
+        normal_dir="zfill/train/good",      # where your normal samples are
+        abnormal_dir="zfill/test/bad",      # where your defects are
         normal_split_ratio=0.8,       # auto split
     )
 

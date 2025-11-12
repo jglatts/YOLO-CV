@@ -10,6 +10,42 @@ from anomalib.engine import Engine
 from anomalib.models import Patchcore
 import os
 
+def testEngineElastomer():
+    # Load the trained model
+    model = Patchcore()
+    engine = Engine()
+
+    # Path to test dataset
+    dataset_path = "./datasets/Z-Axis/zfill/test"
+
+    # Prepare test images (can be a folder)
+    dataset = PredictDataset(path=dataset_path, 
+                             image_size=(256, 256),
+                             )
+    
+    # Checkpoints 
+    ckpt_path = r"C:\Users\jglatts\Documents\Z-Axis\YOLO-CV\results\Patchcore\zfill_dataset\latest\weights\lightning\model.ckpt"
+
+    # Predict Anomalies
+    predictions = engine.predict(
+        model=model,
+        dataset=dataset,
+        ckpt_path=ckpt_path,
+    )
+
+    # Show results
+    if predictions is not None:
+        print(f"\n\nnumber of of bad objects {len(predictions)}\n\n")
+        for i, pred in enumerate(predictions):
+            analyzeBadImage(pred, i)
+            key = cv2.waitKey(0)
+            cv2.destroyAllWindows()
+            if key == 27:  # ESC to exit early
+                break
+
+    cv2.destroyAllWindows()
+
+
 def analyzeBadImage(pred, i):
     image_path = pred.image_path
     if isinstance(image_path, (list, tuple)):
@@ -20,7 +56,7 @@ def analyzeBadImage(pred, i):
         print(f"Warning: failed to load image: {image_path}")
         return
 
-    print(f"\nimage {image_path} is BAD\n")
+    print(f"\nimage {image_path} is BAD #{i}\n")
 
     # Get anomaly map tensor
     anomaly_map = pred.anomaly_map  # PyTorch tensor
@@ -95,4 +131,4 @@ def testEngine():
 
 
 if __name__ == "__main__":
-    testEngine()
+    testEngineElastomer()
