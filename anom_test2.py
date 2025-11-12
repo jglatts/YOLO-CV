@@ -1,7 +1,15 @@
+'''
+
+        Test Script to use a pretraind model on some images
+        Will draw anomalies on the images with red circles
+'''
 import cv2
+import torch
 from anomalib.data import PredictDataset
 from anomalib.engine import Engine
 from anomalib.models import Patchcore
+import os
+
 
 def testEngine():
     # 1. Load the trained model
@@ -20,9 +28,10 @@ def testEngine():
         ckpt_path=ckpt_path
     )
 
+    # 4. Show results
     if predictions is not None:
-        for pred in predictions:
-            # Handle image path
+        print(f"\n\nnumber of of bad photos {len(predictions)}\n\n")
+        for i, pred in enumerate(predictions):
             image_path = pred.image_path
             if isinstance(image_path, (list, tuple)):
                 image_path = image_path[0]
@@ -32,15 +41,44 @@ def testEngine():
                 print(f"Warning: failed to load image: {image_path}")
                 continue
 
-            # Handle anomaly map
-            anomaly_map = pred.anomaly_map
-            heatmap = (anomaly_map * 255).byte().cpu().numpy()
-            heatmap_color = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
+            print(f"\nimage {image} is BAD\n")
 
-            overlay = cv2.addWeighted(image, 0.7, heatmap_color, 0.3, 0)
+            # Get anomaly map tensor
+            anomaly_map = pred.anomaly_map  # PyTorch tensor
 
-            cv2.imshow("Anomaly Detection", overlay)
-            cv2.waitKey(0)
+            # Convert anomaly map to numpy array, scale 0-255
+            heatmap = (anomaly_map * 255).clamp(0, 255).byte().cpu().numpy()
+            if heatmap.ndim != 2:
+                heatmap = heatmap[0]
+
+            # Resize anomaly map to original image size
+            heatmap_resized = cv2.resize(heatmap, (image.shape[1], image.shape[0]))
+
+            # Threshold to find anomaly regions
+            _, thresh = cv2.threshold(heatmap_resized, 128, 255, cv2.THRESH_BINARY)
+
+            # Find contours
+            contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+            # Copy original image to draw on
+            output_image = image.copy()
+
+            # Draw red circles around each anomaly
+            for cnt in contours:
+                # Get minimal enclosing circle
+                (x, y), radius = cv2.minEnclosingCircle(cnt)
+                if radius > 5:  # ignore tiny noise
+                    center = (int(x), int(y))
+                    radius = int(radius)
+                    cv2.circle(output_image, center, radius, (0, 0, 255), 2)  # red circle
+
+            # Show the image
+            cv2.imshow(f"img {i}", output_image)
+            key = cv2.waitKey(0)
+            cv2.destroyAllWindows()
+
+            if key == 27:  # ESC to exit early
+                break
 
     cv2.destroyAllWindows()
 

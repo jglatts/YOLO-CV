@@ -1,6 +1,10 @@
-﻿from anomalib.data import MVTecAD
+﻿'''
+        Test Script to train and test a model on MVTecAD dataset
+'''
+from anomalib.data import MVTecAD
 from anomalib.engine import Engine
 from anomalib.models import Patchcore
+
 
 def createEngine():
     # 1. Create dataset
