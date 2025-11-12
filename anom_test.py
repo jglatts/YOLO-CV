@@ -1,8 +1,8 @@
-﻿if __name__ == "__main__":
-    from anomalib.data import MVTecAD
-    from anomalib.engine import Engine
-    from anomalib.models import Patchcore
+﻿from anomalib.data import MVTecAD
+from anomalib.engine import Engine
+from anomalib.models import Patchcore
 
+def createEngine():
     # 1. Create dataset
     datamodule = MVTecAD(
         root="./datasets/MVTecAD",
@@ -20,3 +20,8 @@
 
     # 4. Test
     test_results = engine.test(datamodule=datamodule, model=model)
+
+
+
+if __name__ == "__main__":
+    createEngine()
