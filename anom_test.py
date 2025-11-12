@@ -15,7 +15,6 @@ def createEngineSimple(dataset, category_name):
         normal_dir="train/good",      # where your normal samples are
         abnormal_dir="test/bad",   # where your defects are
         normal_split_ratio=0.8,       # auto split
-        image_size=(256, 256),
     )
 
     model = Patchcore(num_neighbors=6)
