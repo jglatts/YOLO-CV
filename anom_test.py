@@ -15,11 +15,11 @@ def createEngineSimple(dataset, category_name):
         root=dataset,
         normal_dir="zfill/train/good",      # where your normal samples are
         abnormal_dir="zfill/test/bad",      # where your defects are
-        normal_split_ratio=0.8,       # auto split
+        normal_split_ratio=0.8,             # auto split
     )
 
     model = Patchcore(num_neighbors=6)
-    engine = Engine(max_epochs=1)
+    engine = Engine(max_epochs=10)      # for smaller dataset, use more epochs
     engine.fit(datamodule=datamodule, model=model)
     engine.test(datamodule=datamodule, model=model)
 
@@ -36,7 +36,7 @@ def createEngineMVTecAD(dataset, category_name):
 
     # Initialize model and engine
     model = Patchcore(num_neighbors=6)
-    engine = Engine(max_epochs=3)
+    engine = Engine(max_epochs=5)
 
     # Train and Test
     engine.fit(datamodule=datamodule, model=model)
