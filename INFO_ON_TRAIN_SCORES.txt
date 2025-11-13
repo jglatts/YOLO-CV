@@ -1,0 +1,54 @@
+﻿1. image_AUROC
+
+AUROC = Area Under the Receiver Operating Characteristic curve
+
+Measures how well the model separates good vs. bad images.
+
+Range: 0 → 1
+	1 = perfect separation (all defects detected, no false positives)
+	0.5 = random guessing
+	<0.5 = worse than random
+
+Your result: 0.333
+
+That’s lower than random, meaning the model is currently struggling to tell good from bad.
+
+With only a few images or a very small training set (and only 1 epoch), this is normal.
+
+
+2. image_F1Score
+
+F1 Score = harmonic mean of precision and recall
+
+F1 = 2 * (precision * recall) / (precision + recall)
+
+Measures how well the model correctly flags defective images:
+
+Precision: % of predicted defects that were actually defects
+Recall: % of actual defects the model detected
+
+Range: 0 → 1
+1 = perfect
+0 = totally wrong
+
+Your result: 0.727
+
+This is actually not terrible, especially for such a small test run.
+
+It means that, for the images the model did classify as defective, it got a decent fraction correct, even if the overall ranking (AUROC) is bad.
+
+⚠️ Why the numbers look weird
+
+Very small dataset / few images → metrics fluctuate a lot.
+Only 1 training epoch → the model hasn’t really learned the features.
+Patchcore with few neighbors (num_neighbors=6) → might underfit for tiny datasets.
+No ground-truth masks → pixel-level learning isn’t available; image-level only.
+
+✅ Takeaways
+
+AUROC tells you if the model can rank images from normal → abnormal. Low AUROC → it’s not ranking well yet.
+F1 tells you if it can classify some defects correctly. Your F1 = 0.73 is actually promising for a tiny run.
+Both will improve if you:
+- Use more training images
+- Train for more epochs
+- Possibly tweak Patchcore parameters

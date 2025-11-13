@@ -1,4 +1,4 @@
-'''
+﻿'''
 
         Test Script to use a pretraind model on some images
         Will draw anomalies on the images with red circles
@@ -10,6 +10,22 @@ import numpy as np
 from anomalib.data import PredictDataset
 from anomalib.engine import Engine
 from anomalib.models import Patchcore
+
+'''
+    need more good images of parts for training
+        ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+        ┃        Test metric        ┃       DataLoader 0        ┃
+        ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+        │        image_AUROC        │    0.3333333432674408     │
+        │       image_F1Score       │    0.7272727489471436     │
+        └───────────────────────────┴───────────────────────────┘
+    we want image_AUROC closer to 1.0    
+
+    F1_SCORE
+        Range: 0 → 1
+            1 = perfect
+            0 = totally wrong
+'''
 
 def testEngineElastomer():
     # Load the trained model

@@ -36,7 +36,7 @@ def createEngineMVTecAD(dataset, category_name):
 
     # Initialize model and engine
     model = Patchcore(num_neighbors=6)
-    engine = Engine(max_epochs=1)
+    engine = Engine(max_epochs=3)
 
     # Train and Test
     engine.fit(datamodule=datamodule, model=model)
@@ -45,5 +45,5 @@ def createEngineMVTecAD(dataset, category_name):
 
 
 if __name__ == "__main__":
-    #createEngineMVTecAD("./datasets/MVTecAD", "transistor")
+    #createEngineMVTecAD("./datasets/MVTecAD", "Z-Axis")
     createEngineSimple("./datasets/Z-Axis", "zfill")
