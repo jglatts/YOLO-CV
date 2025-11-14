@@ -42,15 +42,18 @@ def analyzePrediction(pred, i, show_heatmap=True, frame_override=None):
     contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     output_image = image.copy()
-    for cnt in contours:
-        (x, y), radius = cv2.minEnclosingCircle(cnt)
-        if radius > MIN_RADIUS:
-            cv2.circle(output_image, (int(x), int(y)), int(radius), (0, 0, 255), 2)
+    if status == "BAD":
+        for cnt in contours:
+            (x, y), radius = cv2.minEnclosingCircle(cnt)
+            if radius > MIN_RADIUS:
+                cv2.circle(output_image, (int(x), int(y)), int(radius), (0, 0, 255), 2)
 
     heatmap_color = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
     overlay = cv2.addWeighted(output_image, 0.7, heatmap_color, 0.3, 0)
 
-    cv2.imshow(f"Live {status}", overlay)
+    cv2.imshow(f"Heatmap {status}", overlay)
+    cv2.imshow(f"Live {status}", image)
+
     return status
 
 
@@ -62,6 +65,7 @@ def predict_frame(frame):
     engine = Engine()
 
     # save frame temporarily
+    # could be taking up time
     temp_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
     cv2.imwrite(temp_file.name, frame)
 
@@ -158,7 +162,7 @@ def loopAndTest():
             "good_4.png",
             "good_5.png",
             ]
-    for img in images3:
+    for img in images:
         print("testing " + img)
         testEngineSingleImage(img)
         if cv2.waitKey(0) & 0xFF == ord('q'):
