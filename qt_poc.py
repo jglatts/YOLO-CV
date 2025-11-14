@@ -211,10 +211,17 @@ class MainWindow(QMainWindow):
         self.main_layout.setContentsMargins(10, 10, 10, 10)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
-        # Video display on the left
-        self.video_label = QLabel()
-        self.video_label.setFixedSize(640, 480)
-        self.main_layout.addWidget(self.video_label)
+        # Video display (stacked vertically)
+        self.video_layout = QVBoxLayout()  # vertical stack for video
+        self.raw_video_label = QLabel("Raw Feed")
+        self.raw_video_label.setFixedSize(640, 240)
+        self.processed_video_label = QLabel("Processed Feed")
+        self.processed_video_label.setFixedSize(640, 240)
+
+        self.video_layout.addWidget(self.raw_video_label)
+        self.video_layout.addWidget(self.processed_video_label)
+
+        self.main_layout.addLayout(self.video_layout)
 
         # Controls layout on the right
         controls_layout = QVBoxLayout()
@@ -296,7 +303,6 @@ class MainWindow(QMainWindow):
                 cv2.LINE_AA
             )
 
-
         # Convert BGR (OpenCV) to RGB (Qt)
         rgb_frame = cv2.cvtColor(display_frame, cv2.COLOR_BGR2RGB)
 
@@ -306,19 +312,21 @@ class MainWindow(QMainWindow):
         qimg = QImage(rgb_frame.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
 
         # Display in QLabel
-        self.video_label.setPixmap(QPixmap.fromImage(qimg))
+        self.processed_video_label.setPixmap(QPixmap.fromImage(qimg).scaled(
+            self.processed_video_label.width(),
+            self.processed_video_label.height(),
+            Qt.AspectRatioMode.KeepAspectRatio))
 
     def update_frame(self, image):
+        # Show live feed in raw video label
         if self.radio_gray.isChecked():
             display_image = self.camera_thread.qt_image_gray
         else:
             display_image = self.camera_thread.qt_image_rgb
 
-        # shows live feed    
-        # this is fast and overrides detection display
-        #self.video_label.setPixmap(QPixmap.fromImage(display_image))
+        self.raw_video_label.setPixmap(QPixmap.fromImage(display_image))
 
-        # set frame for detection 
+        # Set frame for detection
         if self.camera_thread.process_frame is not None:
             self.detection_thread.set_frame(self.camera_thread.process_frame)
 
