@@ -1,30 +1,32 @@
 # YOLO-CV
 
-YOLO-CV is a concept project for YOLO-based computer vision tasks. It demonstrates using **YOLO models** (Ultralytics YOLOv8/YOLOv11) for object detection on images, URLs, or live USB camera feeds.
+YOLO-CV is a concept project for experimenting with real-time computer vision using **Ultralytics YOLO (v8/v11)** and **Anomalib** anomaly-detection models. It includes a lightweight PyQt6 interface for running inference on images, URLs, or a live USB camera feed.
 
 ---
+
+## Features
+
+- Run inference using:
+  - **YOLO models** (object detection)
+  - **Anomalib models** (PatchCore, PADIM, etc.)
+- Input sources:
+  - Local image files
+  - Image URLs
+  - Live USB camera
+- Real-time visualization in a PyQt6 GUI
+- Bounding boxes, anomaly maps, and status overlays
+- Simple, extendable architecture for experimentation
+
+---
+
 ## UI
 
 ![UI](https://raw.githubusercontent.com/jglatts/YOLO-CV/refs/heads/master/sys-images/ui.png)
 
 ---
 
-## Features
-
-- Run YOLO inference on images from:
-  - Local files
-  - URLs
-  - Live USB camera
-- Visualize detection results with bounding boxes and class labels
-- Easily extendable for custom dataset training
-- Supports exporting models to formats like ONNX
-
----
-
 ## Installation
 
-1. Clone this repository:
-
 ```bash
-git clone https://github.com/yourusername/YOLO-CV.git
+git clone https://github.com/jglatts/YOLO-CV.git
 cd YOLO-CV
