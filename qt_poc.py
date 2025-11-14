@@ -14,180 +14,8 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QImage, QPixmap
 from PyQt6.QtCore import Qt, QTimer, QThread, pyqtSignal
-
-
-class Driver():
-    def __init__(self):
-        pass
-
-    def run(self):
-        app = QApplication(sys.argv)
-        window = MainWindow()
-        window.show()
-        app.exec()
-
-
-class DetectionThread(QThread):
-    result_ready = pyqtSignal(np.ndarray)  # emits processed frame
-
-    def __init__(self):
-        super().__init__()
-        self.detector = AnomalyDetector()
-        self.frame = None
-        self.running = False
-
-    def set_frame(self, frame):
-        self.frame = frame
-
-    def run(self):
-        self.running = True
-        while self.running:
-            if self.frame is not None:
-                result = self.detector.predict(self.frame)
-                self.result_ready.emit(result)
-                self.frame = None
-            self.msleep(10)
-
-    def stop(self):
-        self.running = False
-        self.quit()
-        self.wait()
-
-
-class AnomalyDetector():
-    def __init__(self):
-        self.IMAGE_SCORE_THRESHOLD = 0.5
-        self.MIN_RADIUS = 3
-
-    def analyzePrediction(self, pred, i, show_heatmap=True, frame_override=None):
-        """
-        Analyze Patchcore prediction 
-        """
-        # anomaly map
-        anomaly_map = pred.anomaly_map.squeeze().cpu().numpy()
-        image_score = float(np.max(anomaly_map))
-
-        self.status = "BAD" if image_score > self.IMAGE_SCORE_THRESHOLD else "GOOD"
-        print(f"[CAM] Frame {i}: {self.status} (score={image_score:.4f})")
-
-        # choose the image (frame_override is a BGR OpenCV frame)
-        if frame_override is not None:
-            image = frame_override.copy()
-        else:
-            image_path = pred.image_path[0] if isinstance(pred.image_path, (list, tuple)) else pred.image_path
-            image = cv2.imread(str(image_path))
-
-        if not show_heatmap:
-            return status
-
-        # create heatmap
-        heatmap = (255 * (anomaly_map - anomaly_map.min()) /
-                   (anomaly_map.max() - anomaly_map.min() + 1e-8)).astype(np.uint8)
-        heatmap = cv2.resize(heatmap, (image.shape[1], image.shape[0]))
-
-        _, thresh = cv2.threshold(heatmap, 60, 255, cv2.THRESH_BINARY)
-        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-        print(f"\n\nimage {i} is {self.status}\n\n")
-
-        output_image = image.copy()
-        if self.status == "BAD":
-            for cnt in contours:
-                (x, y), radius = cv2.minEnclosingCircle(cnt)
-                if radius > self.MIN_RADIUS:
-                    cv2.circle(output_image, (int(x), int(y)), int(radius), (0, 0, 255), 2)
-
-        self.heatmap_color = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
-        self.overlay = cv2.addWeighted(output_image, 0.7, self.heatmap_color, 0.3, 0)
-        self.frame = self.overlay
-
-    def analyze(self, frame):
-        """
-        Runs Patchcore prediction on an OpenCV BGR frame.
-        """
-        model = Patchcore()
-        engine = Engine()
-
-        # save frame temporarily
-        # could be taking up time
-        temp_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
-        cv2.imwrite(temp_file.name, frame)
-
-        dataset = PredictDataset(
-            path=temp_file.name,
-            image_size=(512, 512)
-        )
-
-        ckpt_path = r"C:\Users\jglatts\Documents\Z-Axis\YOLO-CV\results\Patchcore\zfill_dataset\latest\weights\lightning\model.ckpt"
-    
-        predictions = engine.predict(
-            model=model,
-            dataset=dataset,
-            ckpt_path=ckpt_path,
-        )
-
-        return predictions
-
-    def predict(self, frame):
-        # Run Patchcore on this frame
-        preds = self.analyze(frame)
-
-        if preds:
-            for i, pred in enumerate(preds):
-                self.analyzePrediction(pred, i, show_heatmap=True, frame_override=frame)
-        else:
-            self.frame = frame
-
-        return self.frame
-
-
-# Worker thread to capture frames
-class CameraThread(QThread):
-    frame_ready = pyqtSignal(QImage)
-
-    def __init__(self, camera_index=0):
-        super().__init__()
-        self.cap = cv2.VideoCapture(camera_index)
-        self.running = False  
-        self.useRGB = False
-
-    def extractFrame(self):
-        # Convert to grayscale
-        gray_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
-        rgb_frame = cv2.cvtColor(gray_frame, cv2.COLOR_GRAY2RGB)
-        self.process_frame = rgb_frame.copy() # keep a copy for processing
-        h, w, ch = rgb_frame.shape
-        bytes_per_line = ch * w
-        self.qt_image_gray = QImage(rgb_frame.data, w, 
-                               h, bytes_per_line, 
-                               QImage.Format.Format_RGB888)
-
-        # Color version
-        rgb_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)  # real RGB
-        h, w, ch = rgb_frame.shape
-        bytes_per_line = ch * w
-        self.qt_image_rgb = QImage(rgb_frame.data, w, 
-                                   h, bytes_per_line, 
-                                   QImage.Format.Format_RGB888)
-
-
-    def run(self):
-        self.running = True
-        while self.running:
-            ret, self.frame = self.cap.read()
-            if not ret:
-                continue
-
-            self.extractFrame()
-            self.frame_ready.emit(self.qt_image_rgb)
-            self.msleep(30)  # small delay (~30 FPS)
-
-    def stop(self):
-        self.running = False
-        self.quit()
-        self.wait()
-        self.cap.release()
-
+from DetectionThread import DetectionThread
+from CameraThread import CameraThread
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -353,6 +181,15 @@ class MainWindow(QMainWindow):
         msgBox.exec()
 
 
+class Driver():
+    def __init__(self):
+        pass
+
+    def run(self):
+        app = QApplication(sys.argv)
+        window = MainWindow()
+        window.show()
+        app.exec()
 
 
 # Driver code
