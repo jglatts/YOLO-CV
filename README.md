@@ -5,7 +5,7 @@ YOLO-CV is a concept project for YOLO-based computer vision tasks. It demonstrat
 ---
 ## UI
 
-![UI]https://raw.githubusercontent.com/jglatts/YOLO-CV/refs/heads/master/sys-images/ui.png)
+![UI](https://raw.githubusercontent.com/jglatts/YOLO-CV/refs/heads/master/sys-images/ui.png)
 
 ---
 
